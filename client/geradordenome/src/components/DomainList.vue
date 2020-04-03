@@ -4,10 +4,10 @@
       <div  class="container">
         <div class="row">
           <div class="col-md">
-            <AppItemList title="Prefixos" v-bind:items="prefixes" v-on:addItem="addPrefix" v-on:deleteItem="deletePrefix"></AppItemList>
+            <AppItemList title="Prefixos" type="prefix" v-bind:items="items.prefix" v-on:addItem="addItem" v-on:deleteItem="deleteItem"></AppItemList>
           </div>
           <div class="col-md">
-            <AppItemList title="Sufixos" v-bind:items="sufixes" v-on:addItem="addSufix" v-on:deleteItem="deleteSufix"></AppItemList>
+            <AppItemList title="Sufixos" type="sufix" v-bind:items="items.sufix" v-on:addItem="addItem" v-on:deleteItem="deleteItem"></AppItemList>
           </div>
         </div>
         <br/>
@@ -17,18 +17,22 @@
             <ul class="list-group">
               <li class="list-group-item" v-for="domain in domains" v-bind:key="domain.name">
                 <div class="row">
-                  <div class="col-md">
+                  <div class="col-md-6">
                     {{ domain.name }}
+                  </div> 
+                  <div class="col-md-3">
+                     <span class="badge badge-info">{{ (domain.available) ? "Disponível" : "Não Disponível" }}</span> 
                   </div>
-                  <div class="col-md text-right">
-                    <button class="btn btn-info">
+                  <div class="col-md-3 text-right">
                        <a class="btn btn-info" v-bind:href="domain.checkout" target="_blank">
                         <span class="fa fa-shopping-cart"></span>
                       </a>
-                    </button>
+                      &nbsp;
+                      <button class="btn btn-info" @click="openDomain(domain)">
+                        <span class="fa fa-search"></span>
+                      </button>
                   </div>
                 </div>
-                
               </li>
             </ul>
           </div>
@@ -41,8 +45,8 @@
 
 <script>
 //import "bootstrap/dist/css/bootstrap.css";
-//import "font-awesome/css/font-awesome.css";
-import axios from "axios/dist/axios";
+//import "font-awesome/css/font-awesome.css"; 
+import {mapState, mapActions} from "vuex";
 import AppItemList from "./AppItemList";
 
 
@@ -53,77 +57,20 @@ export default {
   },
 
   data: function () {
-      return {   
-          prefixes: [] , 
-          sufixes: [],
-          
-          
-        };
+      return {};
   },
 
   methods: {
-      addPrefix(prefix){
-        this.prefixes.push(prefix);
-        
-      } ,
-       deletePrefix(prefix){
-         this.prefixes.splice(this.prefixes.indexOf(prefix), 1);
-          
-      },
-
-      addSufix(sufix){
-        this.sufixes.push(sufix);
-      
-      },
-        deleteSufix(sufix){
-          this.sufixes.splice(this.prefixes.indexOf(sufix), 1);
-           
+     ...mapActions(["addItem","deleteItem","getItems","generateDomains"]),
+        openDomain(domain) {
+          this.$router.push({
+            path: `/domains/${domain.name}`
+          });
         }
   },
-
   computed: {
-              domains() {
-              const domains = [];
-              for (const prefix of this.prefixes) {
-                  for (const sufix of this.sufixes){
-                      const name = prefix + sufix;
-                      const url = name.toLowerCase();
-                      const checkout = `https://checkout.hostgator.com.br/?a=add&sld=${url}&tld=.com.br`;
-                      domains.push({
-                        name,
-                        checkout
-                      });
-                  }
-              }
-                return domains;
-
-            }
-      },
-
-      created(){
-        axios ({
-          url: "http://localhost:4000",
-          method: "post",
-          data: {
-            query: `
-                    {
-                     prefixes: items (type: "prefix") {
-                        id
-                        type
-                        description
-                      }
-                     sufixes: items (type: "sufix") {
-                       description
-                     }
-                    }
-                  `
-          }
-        }).then(response => {
-          const query = response.data;
-          this.prefixes = query.data.prefixes.map(prefix => prefix.description);
-          this.sufixes = query.data.sufixes.map(sufix => sufix.description);
-        });
-      }
+     ...mapState(["items","domains"])
+  }
 };
 
 

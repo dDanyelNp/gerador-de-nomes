@@ -6,7 +6,7 @@
         <h6 class="text-secondary"> Gerador de nomes utilizando Node.Js , Vue.Js e Graphql</h6>
     </div>
     <div id="main">
-      <DomainList></DomainList>
+     <router-view></router-view>
     </div>
   </div>
 </template>
@@ -21,7 +21,7 @@ export default {
   name: "app",
   components: {
    DomainList
-  }
+  } 
 };
 
 </script>
